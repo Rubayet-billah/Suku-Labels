@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page { 
+            size: A4; 
+            margin: 10mm; 
+        }
+        body { 
+            font-family: sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background: #f4f4f4; 
+        }
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1.5in); 
+            gap: 4mm 6mm; 
+            background: white;
+            padding: 5mm;
+            width: fit-content;
+            margin: auto;
+        }
+        .label {
+            width: 1.5in;
+            height: 8mm;
+            border: 0.1pt solid #aaa;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .section-title {
+            grid-column: 1 / -1;
+            font-size: 8pt;
+            font-weight: bold;
+            color: #444;
+            margin-top: 12px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #333;
+            padding-bottom: 2px;
+        }
+        .name { line-height: 1; text-transform: uppercase; }
+        .phone { line-height: 1; font-weight: 700; }
+
+        /* Font Styles */
+        .v1 { font-family: 'Segoe UI', Roboto, Helvetica, sans-serif; }
+        .v2 { font-family: Arial, sans-serif; }
+        .v3 { font-family: 'Trebuchet MS', sans-serif; }
+        .v4 { font-family: Verdana, sans-serif; }
+
+        @media print {
+            body { background: none; }
+            .grid { border: none; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="grid">
+    <script>
+        const phone = "01875685814";
+        const variations = [
+            { id: 'v1', title: 'V1: Modern Sans (Segoe UI)', nSize: '7.5pt', pSize: '13pt' },
+            { id: 'v2', title: 'V2: Standard (Arial)', nSize: '7pt', pSize: '13.5pt' },
+            { id: 'v3', title: 'V3: High Impact (Trebuchet)', nSize: '6.5pt', pSize: '14pt' },
+            { id: 'v4', title: 'V4: Wide Legibility (Verdana)', nSize: '8pt', pSize: '12pt' }
+        ];
+
+        variations.forEach(v => {
+            // Add Section Header
+            document.write(`<div class="section-title">${v.title}</div>`);
+            
+            // Generate 8 labels with "SUKU BILAI"
+            for(let i=0; i<8; i++) {
+                document.write(`
+                    <div class="label ${v.id}">
+                        <div class="name" style="font-size: ${v.nSize};">SUKU BILAI</div>
+                        <div class="phone" style="font-size: ${v.pSize};">${phone}</div>
+                    </div>`);
+            }
+            
+            // Generate 8 labels with just "SUKU"
+            for(let i=0; i<8; i++) {
+                document.write(`
+                    <div class="label ${v.id}">
+                        <div class="name" style="font-size: ${v.nSize}; letter-spacing: 1px;">SUKU</div>
+                        <div class="phone" style="font-size: ${v.pSize};">${phone}</div>
+                    </div>`);
+            }
+        });
+    </script>
+</div>
+
+</body>
+</html>
