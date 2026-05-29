@@ -16,21 +16,21 @@ body {
   margin: 10mm; 
 }
 
-/* Label Grid Sizing & Preview Formats */
+/* Absolute Grid Properties - Locked to physical A4 scales for screen & print */
 .print-grid { 
   display: grid; 
   grid-template-columns: repeat(4, 1.5in); 
   gap: 4mm 6mm; 
   background: white;
   padding: 8mm;
-  width: fit-content;
+  width: 660px; /* Locked physical width */
   margin: 0 auto;
   border-radius: 12px;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  transition: all 0.2s ease-in-out;
+  box-sizing: border-box;
 }
 
-/* Cat Collar Tag Label Properties (Locked to V4 Verdana Styling) */
+/* Absolute Cat collar tag tags (Locked Verdana V4 specification) */
 .label-v4 {
   width: 1.5in;
   height: 8mm;
@@ -49,7 +49,7 @@ body {
   -webkit-print-color-adjust: exact;
 }
 
-/* 8pt Uppercase Name locked at line-height 1 */
+/* 8pt Name locked at line-height 1 */
 .label-name {
   font-size: 8pt;
   line-height: 1;
@@ -84,6 +84,10 @@ body {
     padding: 0 !important;
     margin: 0 !important;
     background: transparent !important;
+    border-radius: 0 !important;
+    width: fit-content !important;
+    transform: none !important; /* Disable any active on-screen scaling */
+    height: auto !important;
   }
   
   .label-v4 {

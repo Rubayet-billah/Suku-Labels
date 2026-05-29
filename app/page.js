@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 export default function SukuLabelsApp() {
   const [defaultPhone, setDefaultPhone] = useState("01875685814");
@@ -11,6 +11,52 @@ export default function SukuLabelsApp() {
   const [newCatName, setNewCatName] = useState("");
   const [newCatLabels, setNewCatLabels] = useState(8);
   const [error, setError] = useState("");
+
+  // States to control responsive scaling on-screen
+  const [scale, setScale] = useState(1);
+  const [gridHeight, setGridHeight] = useState(0);
+
+  const parentRef = useRef(null);
+  const gridRef = useRef(null);
+
+  // Measure and compute scale ratio dynamically
+  useEffect(() => {
+    if (typeof window === "undefined" || !parentRef.current || !gridRef.current) return;
+
+    const handleResize = () => {
+      const parentElement = parentRef.current;
+      const gridElement = gridRef.current;
+
+      if (parentElement && gridElement) {
+        const parentWidth = parentElement.offsetWidth;
+        const targetWidth = 660; // Natural width of the physical A4 print-grid
+
+        // Query the inner grid directly to get the accurate unscaled height
+        const innerGrid = gridElement.querySelector(".print-grid");
+        const unscaledHeight = innerGrid ? innerGrid.scrollHeight : gridElement.scrollHeight;
+
+        if (parentWidth < targetWidth && parentWidth > 0) {
+          const ratio = parentWidth / targetWidth;
+          setScale(ratio);
+          setGridHeight(unscaledHeight * ratio);
+        } else {
+          setScale(1);
+          setGridHeight(unscaledHeight);
+        }
+      }
+    };
+
+    const resizeObserver = new ResizeObserver(() => {
+      handleResize();
+    });
+
+    resizeObserver.observe(parentRef.current);
+    handleResize();
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [cats, defaultPhone]);
 
   const handleAddCat = (e) => {
     e.preventDefault();
@@ -320,32 +366,55 @@ export default function SukuLabelsApp() {
             </svg>
           </div>
           <p className="text-xs text-slate-400 leading-relaxed">
-            The workspace below displays an accurate preview of the collar tags. Each cat has a specific phone number and custom label count. When you print, the sidebar control panel is hidden and the tag grid formats onto A4 physical paper.
+            The workspace below displays an accurate preview of the collar tags. The layout matches the physical A4 alignment, scaled dynamically to fit your screen. When you print, it prints at exactly 100% scale.
           </p>
         </div>
 
-        {/* A4 Page View (Preview Wrapper) */}
+        {/* A4 Page View (Preview Wrapper with dynamic JS scaling on screen) */}
         <div className="w-full flex items-start justify-center print:block print:w-auto">
           {cats.length === 0 ? (
             <div className="print-grid min-h-[100px] flex items-center justify-center p-12 text-slate-500 italic text-sm print:hidden">
               Please add at least one cat name to generate tags.
             </div>
           ) : (
-            <div className="print-grid">
-              {cats.flatMap((cat) => {
-                const isShort = cat.name.length <= 4;
-                const letterSpacingStyle = isShort ? { letterSpacing: "1px" } : {};
-                
-                // Return dynamic number of labels per cat name
-                return Array.from({ length: cat.labelCount }).map((_, index) => (
-                  <div key={`${cat.id}-${index}`} className="label-v4">
-                    <span className="label-name" style={letterSpacingStyle}>
-                      {cat.name}
-                    </span>
-                    <span className="label-phone">{cat.phone}</span>
-                  </div>
-                ));
-              })}
+            <div 
+              ref={parentRef}
+              style={{ 
+                height: scale < 1 ? `${gridHeight}px` : "auto", 
+                width: "100%",
+                display: "flex", 
+                justifyContent: "center", 
+                alignItems: "flex-start",
+                overflow: "hidden"
+              }}
+              className="print:h-auto print:w-auto print:overflow-visible"
+            >
+              <div 
+                ref={gridRef}
+                style={{ 
+                  transform: scale < 1 ? `scale(${scale})` : "none", 
+                  transformOrigin: "top center",
+                  flexShrink: 0
+                }}
+                className="print:transform-none"
+              >
+                <div className="print-grid">
+                  {cats.flatMap((cat) => {
+                    const isShort = cat.name.length <= 4;
+                    const letterSpacingStyle = isShort ? { letterSpacing: "1px" } : {};
+                    
+                    // Return dynamic number of labels per cat name
+                    return Array.from({ length: cat.labelCount }).map((_, index) => (
+                      <div key={`${cat.id}-${index}`} className="label-v4">
+                        <span className="label-name" style={letterSpacingStyle}>
+                          {cat.name}
+                        </span>
+                        <span className="label-phone">{cat.phone}</span>
+                      </div>
+                    ));
+                  })}
+                </div>
+              </div>
             </div>
           )}
         </div>
