@@ -4,7 +4,7 @@ import React, { useState } from "react";
 
 export default function SukuLabelsApp() {
   const [phone, setPhone] = useState("01875685814");
-  const [catNames, setCatNames] = useState(["SUKU BILAI", "SUKU"]);
+  const [catNames, setCatNames] = useState(["SUKU", "KITTY"]);
   const [newCatName, setNewCatName] = useState("");
   const [error, setError] = useState("");
 
