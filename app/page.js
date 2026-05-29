@@ -3,9 +3,13 @@
 import React, { useState } from "react";
 
 export default function SukuLabelsApp() {
-  const [phone, setPhone] = useState("01875685814");
-  const [catNames, setCatNames] = useState(["SUKU", "KITTY"]);
+  const [defaultPhone, setDefaultPhone] = useState("01875685814");
+  const [cats, setCats] = useState([
+    { id: "SUKU-default", name: "SUKU", phone: "01875685814", labelCount: 8 },
+    { id: "KITTY-default", name: "KITTY", phone: "01875685814", labelCount: 8 },
+  ]);
   const [newCatName, setNewCatName] = useState("");
+  const [newCatLabels, setNewCatLabels] = useState(8);
   const [error, setError] = useState("");
 
   const handleAddCat = (e) => {
@@ -15,23 +19,45 @@ export default function SukuLabelsApp() {
       setError("Please enter a cat name.");
       return;
     }
-    if (catNames.includes(name)) {
+    if (cats.some((cat) => cat.name === name)) {
       setError("This cat name already exists in the list.");
       return;
     }
-    setCatNames([...catNames, name]);
+    const newCat = {
+      id: `${name}-${Date.now()}`,
+      name: name,
+      phone: defaultPhone,
+      labelCount: newCatLabels,
+    };
+    setCats([...cats, newCat]);
     setNewCatName("");
+    setNewCatLabels(8);
     setError("");
   };
 
-  const handleDeleteCat = (nameToDelete) => {
-    setCatNames(catNames.filter((name) => name !== nameToDelete));
+  const handleUpdateCat = (id, field, value) => {
+    setCats(
+      cats.map((cat) => {
+        if (cat.id === id) {
+          return { ...cat, [field]: value };
+        }
+        return cat;
+      })
+    );
+  };
+
+  const handleDeleteCat = (idToDelete) => {
+    setCats(cats.filter((cat) => cat.id !== idToDelete));
   };
 
   const handleResetToDefaults = () => {
-    setPhone("01875685814");
-    setCatNames(["SUKU BILAI", "SUKU"]);
+    setDefaultPhone("01875685814");
+    setCats([
+      { id: "SUKU-default", name: "SUKU", phone: "01875685814", labelCount: 8 },
+      { id: "KITTY-default", name: "KITTY", phone: "01875685814", labelCount: 8 },
+    ]);
     setNewCatName("");
+    setNewCatLabels(8);
     setError("");
   };
 
@@ -41,17 +67,16 @@ export default function SukuLabelsApp() {
     }
   };
 
-  // Generate 8 labels per cat name
-  const labelsCountPerCat = 8;
+  const labelMultiples = [4, 8, 12, 16, 20, 24, 32, 40, 48];
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-slate-900 text-slate-100 font-sans antialiased selection:bg-indigo-500 selection:text-white">
-
+      
       {/* 1. UI Control Panel (Interactive Sidebar) - Hidden during print */}
-      <aside className="w-full md:w-80 bg-slate-950 border-b md:border-b-0 md:border-r border-slate-800 p-6 flex flex-col flex-shrink-0 print:hidden justify-between">
-        <div className="space-y-6">
+      <aside className="w-full md:w-80 bg-slate-950 border-b md:border-b-0 md:border-r border-slate-800 p-5 flex flex-col flex-shrink-0 print:hidden justify-between">
+        <div className="space-y-5">
           {/* Header */}
-          <div className="flex items-center gap-3 border-b border-slate-800 pb-5">
+          <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
             <svg
               className="w-6 h-6 text-indigo-400"
               fill="none"
@@ -74,15 +99,15 @@ export default function SukuLabelsApp() {
 
           {/* Form Section */}
           <div className="space-y-4">
-            {/* Phone Input */}
+            {/* Default Phone Input */}
             <div>
-              <label htmlFor="phone" className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                Phone Number
+              <label htmlFor="defaultPhone" className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                Default Phone Number (For New Cats)
               </label>
               <div className="relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
                   <svg
-                    className="h-4 w-4 text-slate-400"
+                    className="h-3.5 w-3.5 text-slate-500"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -98,83 +123,134 @@ export default function SukuLabelsApp() {
                 </div>
                 <input
                   type="text"
-                  name="phone"
-                  id="phone"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Enter phone number"
-                  className="block w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-700 rounded-md text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  name="defaultPhone"
+                  id="defaultPhone"
+                  value={defaultPhone}
+                  onChange={(e) => setDefaultPhone(e.target.value)}
+                  placeholder="Default phone number"
+                  className="block w-full pl-8 pr-3 py-1.5 bg-slate-900 border border-slate-700 rounded-md text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                 />
               </div>
             </div>
 
-            {/* Add Cat Name Input */}
-            <div>
-              <label htmlFor="catName" className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                Manage Cat Names
-              </label>
-              <form onSubmit={handleAddCat} className="flex gap-2">
-                <input
-                  type="text"
-                  name="catName"
-                  id="catName"
-                  value={newCatName}
-                  onChange={(e) => setNewCatName(e.target.value)}
-                  placeholder="Cat name"
-                  className="block flex-1 min-w-0 px-3 py-2 bg-slate-900 border border-slate-700 rounded-md text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors uppercase"
-                />
-                <button
-                  type="submit"
-                  className="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white text-sm font-semibold rounded-md flex items-center justify-center transition-colors"
-                  aria-label="Add cat name"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
+            {/* Add Cat Name Form */}
+            <div className="p-3 bg-slate-900/40 border border-slate-800 rounded-lg space-y-3">
+              <span className="block text-[10px] font-bold uppercase tracking-wider text-indigo-400">
+                Add New Cat Tag
+              </span>
+              <form onSubmit={handleAddCat} className="space-y-2">
+                <div>
+                  <input
+                    type="text"
+                    value={newCatName}
+                    onChange={(e) => setNewCatName(e.target.value)}
+                    placeholder="CAT NAME"
+                    className="block w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-md text-xs text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 uppercase tracking-wide"
+                  />
+                </div>
+                
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <select
+                      value={newCatLabels}
+                      onChange={(e) => setNewCatLabels(parseInt(e.target.value))}
+                      className="block w-full px-2 py-1.5 bg-slate-950 border border-slate-800 rounded-md text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    >
+                      {labelMultiples.map((count) => (
+                        <option key={count} value={count}>
+                          {count} labels
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <button
+                    type="submit"
+                    className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white text-xs font-semibold rounded-md flex items-center justify-center gap-1 transition-colors flex-shrink-0 cursor-pointer"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                </button>
+                    Add
+                  </button>
+                </div>
               </form>
-              {error && <p className="mt-1.5 text-xs text-rose-400 font-medium">{error}</p>}
+              {error && <p className="text-[10px] text-rose-400 font-medium">{error}</p>}
             </div>
 
-            {/* Cat Names List */}
-            <div className="pt-2">
-              <span className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                Cat List ({catNames.length})
+            {/* Cats List with Specific Editors */}
+            <div className="space-y-2">
+              <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Active Cats ({cats.length})
               </span>
-              <div className="max-h-56 overflow-y-auto border border-slate-800 rounded-md divide-y divide-slate-800 bg-slate-900 scrollbar-thin scrollbar-thumb-slate-800">
-                {catNames.length === 0 ? (
-                  <p className="p-3 text-xs text-slate-500 text-center italic">No cat names added.</p>
+              <div className="max-h-80 overflow-y-auto space-y-2 pr-1 scrollbar-thin scrollbar-thumb-slate-800">
+                {cats.length === 0 ? (
+                  <p className="p-4 text-xs text-slate-600 text-center italic border border-dashed border-slate-800 rounded-lg">
+                    No tags generated.
+                  </p>
                 ) : (
-                  catNames.map((name) => (
-                    <div key={name} className="flex items-center justify-between p-2.5 hover:bg-slate-800/50 transition-colors group">
-                      <span className="text-sm font-medium text-slate-200 tracking-wide truncate">{name}</span>
-                      <button
-                        onClick={() => handleDeleteCat(name)}
-                        className="text-slate-500 hover:text-rose-400 p-1 rounded-md transition-colors"
-                        title={`Delete ${name}`}
-                        aria-label={`Delete ${name}`}
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
+                  cats.map((cat) => (
+                    <div
+                      key={cat.id}
+                      className="p-3 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 rounded-lg space-y-2.5 transition-all group"
+                    >
+                      {/* Name and Delete Row */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-100 tracking-wider uppercase truncate">
+                          {cat.name}
+                        </span>
+                        <button
+                          onClick={() => handleDeleteCat(cat.id)}
+                          className="text-slate-500 hover:text-rose-400 p-0.5 rounded transition-colors cursor-pointer"
+                          title={`Delete ${cat.name}`}
+                          aria-label={`Delete ${cat.name}`}
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          <svg
+                            className="w-3.5 h-3.5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+
+                      {/* Editing Parameters Row */}
+                      <div className="grid grid-cols-2 gap-2">
+                        {/* Specific Phone */}
+                        <div>
+                          <label className="text-[9px] text-slate-500 font-bold block mb-0.5 uppercase tracking-wide">
+                            Phone
+                          </label>
+                          <input
+                            type="text"
+                            value={cat.phone}
+                            onChange={(e) => handleUpdateCat(cat.id, "phone", e.target.value)}
+                            className="w-full px-2 py-1 bg-slate-950 border border-slate-800 rounded text-[11px] text-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
                           />
-                        </svg>
-                      </button>
+                        </div>
+
+                        {/* Specific Label Count */}
+                        <div>
+                          <label className="text-[9px] text-slate-500 font-bold block mb-0.5 uppercase tracking-wide">
+                            Labels
+                          </label>
+                          <select
+                            value={cat.labelCount}
+                            onChange={(e) => handleUpdateCat(cat.id, "labelCount", parseInt(e.target.value))}
+                            className="w-full px-1.5 py-1 bg-slate-950 border border-slate-800 rounded text-[11px] text-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors cursor-pointer"
+                          >
+                            {labelMultiples.map((count) => (
+                              <option key={count} value={count}>
+                                {count} tags
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
                     </div>
                   ))
                 )}
@@ -183,14 +259,14 @@ export default function SukuLabelsApp() {
           </div>
 
           {/* Action Buttons */}
-          <div className="space-y-2 pt-4">
+          <div className="space-y-2 pt-2">
             <button
               onClick={triggerPrint}
-              disabled={catNames.length === 0}
-              className="w-full py-2.5 bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed text-white font-semibold rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/10 hover:shadow-indigo-600/20 transition-all cursor-pointer"
+              disabled={cats.length === 0}
+              className="w-full py-2 bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-500/10 hover:shadow-indigo-600/20 transition-all cursor-pointer"
             >
               <svg
-                className="w-4 h-4"
+                className="w-3.5 h-3.5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -205,10 +281,10 @@ export default function SukuLabelsApp() {
               </svg>
               Print Labels
             </button>
-
+            
             <button
               onClick={handleResetToDefaults}
-              className="w-full py-1.5 bg-transparent border border-slate-700 hover:border-slate-500 hover:bg-slate-900 active:bg-slate-950 text-slate-400 hover:text-slate-200 text-xs font-semibold rounded-md transition-colors"
+              className="w-full py-1.5 bg-transparent border border-slate-800 hover:border-slate-600 hover:bg-slate-900 active:bg-slate-950 text-slate-500 hover:text-slate-300 text-[10px] font-semibold rounded-md transition-colors cursor-pointer"
             >
               Reset to Defaults
             </button>
@@ -216,16 +292,15 @@ export default function SukuLabelsApp() {
         </div>
 
         {/* Sidebar Footer */}
-        <div className="border-t border-slate-900 pt-4 mt-6 text-[10px] text-slate-500 text-center">
-          {/* improve contents */}
+        <div className="border-t border-slate-900 pt-3 mt-4 text-[10px] text-slate-600 text-center">
           <p>Locked to Verdana Styling (V4)</p>
-          <p className="mt-1">Standard A4 Physical Alignment</p>
+          <p className="mt-0.5">Standard A4 Physical Alignment</p>
         </div>
       </aside>
 
       {/* 2. Print Preview & Grid Generation Workspace */}
-      <main className="flex-1 p-6 md:p-10 overflow-y-auto flex flex-col items-center justify-start bg-slate-900 print:bg-white print:p-0 print:overflow-visible">
-
+      <main className="flex-1 p-6 md:p-8 overflow-y-auto flex flex-col items-center justify-start bg-slate-900 print:bg-white print:p-0 print:overflow-visible">
+        
         {/* Helper Hint - Screen Only */}
         <div className="mb-6 w-full max-w-4xl text-center md:text-left print:hidden bg-slate-950/40 border border-slate-800 p-4 rounded-xl flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400 flex-shrink-0">
@@ -245,29 +320,29 @@ export default function SukuLabelsApp() {
             </svg>
           </div>
           <p className="text-xs text-slate-400 leading-relaxed">
-            The workspace below displays an accurate preview of the collar tags. When you print, the sidebar control panel will automatically hide, and the tag grid will format onto the A4 physical paper.
+            The workspace below displays an accurate preview of the collar tags. Each cat has a specific phone number and custom label count. When you print, the sidebar control panel is hidden and the tag grid formats onto A4 physical paper.
           </p>
         </div>
 
         {/* A4 Page View (Preview Wrapper) */}
         <div className="w-full flex items-start justify-center print:block print:w-auto">
-          {catNames.length === 0 ? (
-            <div className="print-grid min-h-[100px] flex items-center justify-center p-12 text-slate-400 italic text-sm print:hidden">
+          {cats.length === 0 ? (
+            <div className="print-grid min-h-[100px] flex items-center justify-center p-12 text-slate-500 italic text-sm print:hidden">
               Please add at least one cat name to generate tags.
             </div>
           ) : (
             <div className="print-grid">
-              {catNames.map((name) => {
-                const isShort = name.length <= 4;
+              {cats.flatMap((cat) => {
+                const isShort = cat.name.length <= 4;
                 const letterSpacingStyle = isShort ? { letterSpacing: "1px" } : {};
-
-                // Return exactly 8 labels per cat name
-                return Array.from({ length: labelsCountPerCat }).map((_, index) => (
-                  <div key={`${name}-${index}`} className="label-v4">
+                
+                // Return dynamic number of labels per cat name
+                return Array.from({ length: cat.labelCount }).map((_, index) => (
+                  <div key={`${cat.id}-${index}`} className="label-v4">
                     <span className="label-name" style={letterSpacingStyle}>
-                      {name}
+                      {cat.name}
                     </span>
-                    <span className="label-phone">{phone}</span>
+                    <span className="label-phone">{cat.phone}</span>
                   </div>
                 ));
               })}
